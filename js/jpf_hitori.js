@@ -77,8 +77,9 @@ function startUp() {
 
    setupPuzzle();
 
-   document.getElementById("check").addEventListener("mousedown", findErrors);
-   document.getElementById("solve").addEventListener("mousedown", showSolution);
+   // Adding checks for if either the Check Solution or Show Solution button is pressed.
+   document.getElementById("check").onclick = findErrors;
+   document.getElementById("solve").onclick = showSolution;
 
 }
 
@@ -88,8 +89,7 @@ function switchPuzzle(e) {
 
       // Grab title of puzzle
       var puzzleID = e.target.id;
-      var puzzleTitle = e.target.value;
-      document.getElementById("puzzleTitle").innerHTML = puzzleTitle;
+      document.getElementById("puzzleTitle").innerHTML = e.target.value;
 
       switch (puzzleID) {
 
@@ -112,11 +112,6 @@ function switchPuzzle(e) {
 }
 
 function setupPuzzle() {
-   var cellBackground;
-   var cellFont;
-   var cellRounding;
-
-   var cursorType;
 
    allCells = document.querySelectorAll("table#hitoriGrid td");
 
@@ -131,68 +126,64 @@ function setupPuzzle() {
       allCells[i].onmousedown = function(e) {
 
          if (e.shiftKey) {
-            cellBackground = "white";
-            cellFont = "black";
-            cellRounding = 0;
-
-            cursorType="url(./img/jpf_eraser.png), alias";
+            e.target.style.backgroundColor = "white";
+            e.target.style.color = "black";
+            e.target.style.borderRadius = "0";
          } else if (e.altKey) {
-            cellBackground = "black";
-            cellFont = "white";
-            cellRounding = 0;
-
-            cursorType="url(./img/jpf_block.png), cell";
+            e.target.style.backgroundColor = "black";
+            e.target.style.color = "white";
+            e.target.style.borderRadius = "0";
          } else {
-            cellBackground = "rgb(101,101,101)";
-            cellFont = "white";
-            cellRounding = "50%";
-
-            cursorType="url(./img/jpf_circle.png), pointer";
-         }
-
-         for (var i = 0; i < allCells.length; i++) {
-            e.target.style.backgroundColor = cellBackground;
-            e.target.style.color = cellFont;
-            e.target.style.borderRadius = cellRounding;
-            
-            // *! I do not see a way to make the last set of instructions (mousedown event listener) to work. Even when directly applying the style (without a variable) I recieve errors. How do I fix this??
-            /*allCells[i].addEventListener("mouseover",function() {
-               // Trouble here
-               allCells[i].style.cursor = "url(./img/jpf_circle.png), pointer";
-            });*/
-            allCells[i].style.cursor = cursorType;
-
-            allCells[i].addEventListener("mouseup", checkSolution());
+            e.target.style.backgroundColor = "rgb(101, 101, 101)";
+            e.target.style.color = "white";
+            e.target.style.borderRadius = "50%";
          }
          e.preventDefault();
-
-      }
          
-   }
+      }
 
+      allCells[i].addEventListener("mouseover", function(e) {
+            if (e.shiftKey) {
+               e.target.style.cursor = "url(./img/jpf_eraser.png), alias";
+            } else if (e.altKey) {
+               e.target.style.cursor = "url(./img/jpf_block.png), cell";
+            } else {
+               e.target.style.cursor = "url(./img/jpf_circle.png), pointer";
+            }
+         }
+      );
+
+      allCells[i].addEventListener("mouseup", checkSolution);
+         
+
+   }
+      
 }
 
 function findErrors() {
-   var block = document.querySelectorAll("table#hanjieGrid td.filled");
-   var circle = document.querySelectorAll("table#hanjieGrid td.empty");
 
-   // *! Why do I keep running into this error??? (Uncaught TypeError: Cannot read properties of undefined(reading 'style')
-   for (var i = 0; i < block.length; i++) {
-            if (block[i].style.backgroundColor === "rgb(101,101,100)") {
-               block[i].style.backgroundColor = "rgb(255, 0, 0)";
-            }
-         }
+   for (var i = 0; i < allCells.length; i++) {
+         if ((allCells[i].className === "blocks" && allCells[i].style.backgroundColor === "rgb(101, 101, 101)")
+         ||
+         (allCells[i].className === "circles" && allCells[i].style.backgroundColor === "black")) {
+            allCells[i].style.color = "red";
+      }
 
-         //Display incorrect gray cells in red
-         for (var i = 0; i < circle.length; i++) {
-            if(circle[i].style.backgroundColor === "rgb(101, 101, 101)") {
-               circle[i].style.backgroundColor = "rgb(0, 0, 0)";
-               window.alert("alert???");
-            }
-         }
+   }
 
+      setTimeout(function(){
+
+         for (var i = 0; i < allCells.length; i++) {
+         if ((allCells[i].className === "blocks" && allCells[i].style.backgroundColor === "rgb(101, 101, 101)")
+         ||
+         (allCells[i].className === "circles" && allCells[i].style.backgroundColor === "black")) {
+            allCells[i].style.color = "white";
+      }
+
+   }
+
+      }, 1000);
 }
-
 
 
 function checkSolution() {
@@ -216,7 +207,7 @@ function checkSolution() {
    }
 
    /* If solved is still true after the loop, display an alert box */
-   if (solved) alert("Congratulations! You solved the puzzle!");
+   if (solved){ alert("Congratulations! You solved the puzzle!"); }
 }
 
 function showSolution () {
@@ -224,7 +215,7 @@ function showSolution () {
       allCells[i].style.color = "";
       allCells[i].style.backgroundColor = "";
       allCells[i].style.borderRadius = "";
-   };   
+   }
 }
 
 function drawHitori(numbers, blocks, rating) {
@@ -254,8 +245,8 @@ function drawHitori(numbers, blocks, rating) {
       htmlString += "<tr>";
 
       for (var j = 0; j < totalCols; j++) {
-         if (blocks[i][j] == "#") htmlString += "<td  class='blocks'>"
-         else htmlString += "<td class='circles'>";
+         if (blocks[i][j] == "#") { htmlString += "<td  class='blocks'>" }
+         else { htmlString += "<td class='circles'>"; }
 
          htmlString += numbers[i][j];
          htmlString +="</td>";
